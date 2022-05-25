@@ -1,0 +1,42 @@
+name: staging
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    name: Deploy Staging
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v2-beta
+        with:
+          node-version: '16.6.2'
+          check-latest: true
+
+      - name: Setup Env
+        run: |
+          cp .env.pipeline .env.local
+
+      - name: Install NPM Dependencies
+        run: |
+          npm install
+
+      - name: Build App
+        run: npm run build
+
+      - name: Run tests with Jest
+        run: npm test
+
+      - name: Deploy to Vercel Master Preview
+        uses: amondnet/vercel-action@v20
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          scope: ${{ secrets.VERCEL_ORG_ID }}
